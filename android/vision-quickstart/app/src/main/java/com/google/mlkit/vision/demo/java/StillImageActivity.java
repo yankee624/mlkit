@@ -513,7 +513,8 @@ public final class StillImageActivity extends AppCompatActivity {
                   visualizeZ,
                   rescaleZ,
                   runClassification,
-                  /* isStreamMode = */ false);
+                  /* isStreamMode = */ false,
+                      true);
           break;
         case SELFIE_SEGMENTATION:
           imageProcessor = new SegmenterProcessor(this, /* isStreamMode= */ false);

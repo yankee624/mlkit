@@ -396,7 +396,8 @@ public final class CameraXLivePreviewActivity extends AppCompatActivity
                   visualizeZ,
                   rescaleZ,
                   runClassification,
-                  /* isStreamMode = */ true);
+                  /* isStreamMode = */ true,
+                      true);
           break;
         case SELFIE_SEGMENTATION:
           imageProcessor = new SegmenterProcessor(this);

@@ -335,6 +335,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
               }
               VisionProcessorBase.this.onSuccess(results, graphicOverlay);
               if (!PreferenceUtils.shouldHideDetectionInfo(graphicOverlay.getContext())) {
+                Log.e(TAG, "inference info graphic");
                 graphicOverlay.add(
                     new InferenceInfoGraphic(
                         graphicOverlay,

@@ -46,6 +46,7 @@ public class PoseDetectorProcessor
   private final boolean rescaleZForVisualization;
   private final boolean runClassification;
   private final boolean isStreamMode;
+  private final boolean drawJoints;
   private final Context context;
   private final Executor classificationExecutor;
 
@@ -76,7 +77,8 @@ public class PoseDetectorProcessor
       boolean visualizeZ,
       boolean rescaleZForVisualization,
       boolean runClassification,
-      boolean isStreamMode) {
+      boolean isStreamMode,
+      boolean drawJoints) {
     super(context);
     this.showInFrameLikelihood = showInFrameLikelihood;
     this.visualizeZ = visualizeZ;
@@ -84,6 +86,7 @@ public class PoseDetectorProcessor
     detector = PoseDetection.getClient(options);
     this.runClassification = runClassification;
     this.isStreamMode = isStreamMode;
+    this.drawJoints = drawJoints;
     this.context = context;
     classificationExecutor = Executors.newSingleThreadExecutor();
   }
@@ -136,14 +139,16 @@ public class PoseDetectorProcessor
   protected void onSuccess(
       @NonNull PoseWithClassification poseWithClassification,
       @NonNull GraphicOverlay graphicOverlay) {
-    graphicOverlay.add(
-        new PoseGraphic(
-            graphicOverlay,
-            poseWithClassification.pose,
-            showInFrameLikelihood,
-            visualizeZ,
-            rescaleZForVisualization,
-            poseWithClassification.classificationResult));
+    if (drawJoints) {
+      graphicOverlay.add(
+              new PoseGraphic(
+                      graphicOverlay,
+                      poseWithClassification.pose,
+                      showInFrameLikelihood,
+                      visualizeZ,
+                      rescaleZForVisualization,
+                      poseWithClassification.classificationResult));
+    }
   }
 
   @Override

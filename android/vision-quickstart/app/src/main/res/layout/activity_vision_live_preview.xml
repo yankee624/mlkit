@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:keepScreenOn="true">
@@ -11,7 +12,9 @@
       android:layout_width="match_parent"
       android:layout_height="0dp"
       app:layout_constraintTop_toTopOf="parent"
-      app:layout_constraintBottom_toTopOf="@+id/control"/>
+      app:layout_constraintBottom_toTopOf="@+id/control">
+
+  </com.google.mlkit.vision.demo.CameraSourcePreview>
 
   <com.google.mlkit.vision.demo.GraphicOverlay
       android:id="@+id/graphic_overlay"
@@ -21,6 +24,239 @@
       app:layout_constraintRight_toRightOf="@id/preview_view"
       app:layout_constraintTop_toTopOf="@id/preview_view"
       app:layout_constraintBottom_toBottomOf="@id/preview_view"/>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="16dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="650dp"
+      android:orientation="horizontal"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+
+    <ImageView
+        android:id="@+id/progressBarTemplate1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        app:srcCompat="@drawable/progress_bar_template" />
+
+    <ImageView
+        android:id="@+id/progressBarTemplate2"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        app:srcCompat="@drawable/progress_bar_template" />
+
+    <ImageView
+        android:id="@+id/progressBarTemplate3"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        app:srcCompat="@drawable/progress_bar_template" />
+  </LinearLayout>
+
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="16dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="650dp"
+      android:orientation="horizontal"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+
+    <ImageView
+        android:id="@+id/progressBarEdge1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:visibility="invisible"
+        app:srcCompat="@drawable/progress_bar_edge" />
+
+    <ImageView
+        android:id="@+id/progressBarEdge2"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:visibility="invisible"
+        app:srcCompat="@drawable/progress_bar_edge" />
+
+    <ImageView
+        android:id="@+id/progressBarEdge3"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:visibility="invisible"
+        app:srcCompat="@drawable/progress_bar_edge" />
+  </LinearLayout>
+
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="16dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="650dp"
+      android:orientation="horizontal"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+
+    <ImageView
+        android:id="@+id/progressBar1"
+        android:layout_width="1px"
+        android:layout_height="match_parent"
+        app:srcCompat="@drawable/progress_bar" />
+
+    <ImageView
+        android:id="@+id/progressBar2"
+        android:layout_width="1px"
+        android:layout_height="match_parent"
+        app:srcCompat="@drawable/progress_bar" />
+
+    <ImageView
+        android:id="@+id/progressBar3"
+        android:layout_width="1px"
+        android:layout_height="match_parent"
+        app:srcCompat="@drawable/progress_bar" />
+  </LinearLayout>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="30dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="680dp"
+      android:orientation="horizontal"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+
+
+    <TextView
+        android:id="@+id/scoreTextView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="90"
+        android:textStyle="bold"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/scoreTextView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="85"
+        android:textStyle="bold"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/scoreTextView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="80"
+        android:textStyle="bold"
+        android:visibility="invisible" />
+  </LinearLayout>
+
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="80dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="600dp"
+      android:orientation="horizontal"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+
+
+    <TextView
+        android:id="@+id/stageTextView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:text="Stage 1" />
+
+    <TextView
+        android:id="@+id/stageTextView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:text="Stage 2" />
+
+    <TextView
+        android:id="@+id/stageTextView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:text="Stage 3" />
+  </LinearLayout>
+
+
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginBottom="480dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+
+    <TextView
+        android:id="@+id/hitMissText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text=""
+        android:textStyle="bold" />
+  </RelativeLayout>
+
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+
+    <TextView
+        android:id="@+id/finalResultText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text=""
+        android:textStyle="bold" />
+  </RelativeLayout>
 
   <include
       android:id="@+id/settings_button"
@@ -34,9 +270,9 @@
       android:id="@id/control"
       android:layout_width="match_parent"
       android:layout_height="60dp"
-      app:layout_constraintBottom_toBottomOf="parent"
-      android:background="#000"
-      android:orientation="horizontal">
+      android:background="#00000000"
+      android:orientation="horizontal"
+      app:layout_constraintBottom_toBottomOf="parent">
 
     <ToggleButton
         android:id="@+id/facing_switch"
@@ -46,14 +282,14 @@
         android:background="@layout/toggle_style"
         android:checked="false"
         android:textOff=""
-        android:textOn=""/>
+        android:textOn="" />
 
     <Spinner
         android:id="@+id/spinner"
         android:layout_width="0dp"
-        android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:layout_weight="1" />
 
   </LinearLayout>
 

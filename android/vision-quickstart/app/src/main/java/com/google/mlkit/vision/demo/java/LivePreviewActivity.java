@@ -17,8 +17,13 @@
 package com.google.mlkit.vision.demo.java;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+
+import androidx.annotation.Dimension;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,6 +32,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import com.google.android.gms.common.annotation.KeepName;
@@ -57,6 +63,9 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /** Live preview demo for ML Kit APIs. */
 @KeepName
@@ -84,7 +93,26 @@ public final class LivePreviewActivity extends AppCompatActivity
   private CameraSource cameraSource = null;
   private CameraSourcePreview preview;
   private GraphicOverlay graphicOverlay;
-  private String selectedModel = OBJECT_DETECTION;
+  private String selectedModel = POSE_DETECTION;
+
+
+  final int NUM_STAGE = 3;
+  int curr_stage = 0;
+  Drawable progressBarTemplateDrawable;
+  ImageView[] progressBarEdges = new ImageView[NUM_STAGE];
+  ImageView[] progressBarTemplates = new ImageView[NUM_STAGE];
+  ImageView[] progressBars = new ImageView[NUM_STAGE];
+  TextView[] stageTexts = new TextView[NUM_STAGE];
+  TextView[] scoreTexts = new TextView[NUM_STAGE];
+  TextView hitMissText;
+  TextView finalResultText;
+
+  boolean SHOW_PAST_PROGRESS = true;
+  boolean DRAW_JOINTS = true;
+
+  long ANALYZE_STAGE_TIME = 2000;
+  long STAGE_DURATION = 5000;
+  long TOTAL_PLAY_TIME = NUM_STAGE*STAGE_DURATION + ANALYZE_STAGE_TIME;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -104,21 +132,9 @@ public final class LivePreviewActivity extends AppCompatActivity
 
     Spinner spinner = findViewById(R.id.spinner);
     List<String> options = new ArrayList<>();
-    options.add(OBJECT_DETECTION);
-    options.add(OBJECT_DETECTION_CUSTOM);
-    options.add(CUSTOM_AUTOML_OBJECT_DETECTION);
-    options.add(FACE_DETECTION);
-    options.add(BARCODE_SCANNING);
-    options.add(IMAGE_LABELING);
-    options.add(IMAGE_LABELING_CUSTOM);
-    options.add(CUSTOM_AUTOML_LABELING);
     options.add(POSE_DETECTION);
-    options.add(SELFIE_SEGMENTATION);
-    options.add(TEXT_RECOGNITION_LATIN);
-    options.add(TEXT_RECOGNITION_CHINESE);
-    options.add(TEXT_RECOGNITION_DEVANAGARI);
-    options.add(TEXT_RECOGNITION_JAPANESE);
-    options.add(TEXT_RECOGNITION_KOREAN);
+    options.add(OBJECT_DETECTION);
+
 
     // Creating adapter for spinner
     ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, R.layout.spinner_style, options);
@@ -141,6 +157,247 @@ public final class LivePreviewActivity extends AppCompatActivity
         });
 
     createCameraSource(selectedModel);
+    hitMissText = findViewById(R.id.hitMissText);
+    finalResultText = findViewById(R.id.finalResultText);
+    stageTexts[0] = findViewById(R.id.stageTextView1);
+    stageTexts[1] = findViewById(R.id.stageTextView2);
+    stageTexts[2] = findViewById(R.id.stageTextView3);
+    scoreTexts[0] = findViewById(R.id.scoreTextView1);
+    scoreTexts[1] = findViewById(R.id.scoreTextView2);
+    scoreTexts[2] = findViewById(R.id.scoreTextView3);
+    progressBarTemplates[0] = findViewById(R.id.progressBarTemplate1);
+    progressBarTemplates[1] = findViewById(R.id.progressBarTemplate2);
+    progressBarTemplates[2] = findViewById(R.id.progressBarTemplate3);
+    progressBarEdges[0] = findViewById(R.id.progressBarEdge1);
+    progressBarEdges[1] = findViewById(R.id.progressBarEdge2);
+    progressBarEdges[2] = findViewById(R.id.progressBarEdge3);
+    progressBars[0] = findViewById(R.id.progressBar1);
+    progressBars[1] = findViewById(R.id.progressBar2);
+    progressBars[2] = findViewById(R.id.progressBar3);
+    for (int i = 0; i < progressBars.length; i++) {
+      progressBarTemplates[i].getLayoutParams().height = 150;
+      progressBarEdges[i].getLayoutParams().height = 150;
+      progressBars[i].getLayoutParams().height = 150;
+    }
+    for (TextView stageText: stageTexts) {
+      stageText.setTextSize(Dimension.SP, 20);
+      stageText.setTextColor(Color.parseColor("#E54A4A"));
+    }
+    for (TextView scoreText: scoreTexts) {
+      scoreText.setTextSize(Dimension.SP, 20);
+      scoreText.setTextColor(Color.parseColor("#332F2F"));
+    }
+    finalResultText.setTextSize(Dimension.SP, 40);
+    finalResultText.setTextColor(Color.parseColor("#23FF00"));
+    hitMissText.setTextSize(Dimension.SP, 40);
+
+    progressBarTemplateDrawable = getDrawable(R.drawable.progress_bar_template);
+
+
+    if (!SHOW_PAST_PROGRESS) {
+      for (ImageView progressBarTemplate: progressBarTemplates) {
+        progressBarTemplate.setVisibility(View.INVISIBLE);
+      }
+      for (TextView stageText: stageTexts) {
+        stageText.setVisibility(View.INVISIBLE);
+      }
+    }
+
+    Timer timer = new Timer();
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        if (SHOW_PAST_PROGRESS) {
+          showHitMiss();
+          progressAnimation();
+          showFinalScore();
+        } else {
+          showHitMiss();
+          try {
+            Thread.sleep(NUM_STAGE * STAGE_DURATION);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          curr_stage = NUM_STAGE;
+          showLoading();
+          try {
+            Thread.sleep(ANALYZE_STAGE_TIME);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          showFinalScore();
+        }
+      }
+    }, 10000);
+  }
+
+  public void showHitMiss() {
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        Random random = new Random();
+        while (curr_stage < NUM_STAGE) {
+          runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              if (random.nextInt(100) < 70) {
+                hitMissText.setText("Hit!");
+                hitMissText.setTextColor(Color.parseColor("#00FF59"));
+              } else {
+                hitMissText.setText("Miss!");
+                hitMissText.setTextColor(Color.parseColor("#F92C10"));
+              }
+            }
+          });
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }).start();
+  }
+
+  public void showLoading() {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        hitMissText.setText("");
+        finalResultText.setText("Loading...");
+      }
+    });
+  }
+
+  public void showFinalScore() {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        finalResultText.setText("Great job!\nTotal score: 85");
+      }
+    });
+  }
+
+  public void markCurrentProgress(int stage) {
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        // All stage done: Turn off all stageText colors & progress bar edges
+        if (stage >= NUM_STAGE) {
+          for (int i = 0; i < NUM_STAGE; i++) {
+            stageTexts[i].setTextColor(Color.parseColor("#D5D5D5"));
+          }
+
+          for (ImageView progressBarEdge: progressBarEdges) {
+            runOnUiThread(new Runnable() {
+              @Override
+              public void run() {
+                progressBarEdge.setVisibility(View.INVISIBLE);
+              }
+            });
+          }
+          return;
+        }
+
+        for (int i = 0; i < NUM_STAGE; i++) {
+          if (i == stage) stageTexts[i].setTextColor(Color.parseColor("#E54A4A"));
+          else  stageTexts[i].setTextColor(Color.parseColor("#D5D5D5"));
+        }
+
+
+        // Blinking: visible -> invisible -> visible -> ...
+        while (curr_stage == stage) {
+          runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              progressBarEdges[stage].setVisibility(View.VISIBLE);
+            }
+          });
+
+          try {
+            Thread.sleep(500);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              progressBarEdges[stage].setVisibility(View.INVISIBLE);
+            }
+          });
+          try {
+            Thread.sleep(500);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+
+
+      }
+    }).start();
+
+  }
+
+  public void progressAnimation() {
+    long start = System.currentTimeMillis();
+    for (int i = 0; i < NUM_STAGE+1; i++) {
+      curr_stage = i;
+      markCurrentProgress(i);
+
+
+      // Show progress of last stage
+      if (i >= 1) {
+        if (i == NUM_STAGE) showLoading();
+        fillProgressBar(progressBars[i-1], progressBarTemplates[i-1], scoreTexts[i-1]);
+      }
+
+      if (i == NUM_STAGE) break;
+
+      // Wait until current stage ends
+      try {
+        Thread.sleep(i == 0 ? STAGE_DURATION : STAGE_DURATION - ANALYZE_STAGE_TIME);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    Log.e(TAG, "progress animation total: "+(System.currentTimeMillis()-start));
+  }
+
+  public void fillProgressBar(ImageView progressBar, ImageView progressBarTemplate, TextView scoreText) {
+    int templateWidth = progressBarTemplate.getWidth();
+    Log.e(TAG, "target width: "+templateWidth);
+
+    int steps = 20;
+    for (int step = 0; step < steps; step++) {
+      final int currWidth;
+      if (step == steps-1) {
+        currWidth = templateWidth;
+      } else {
+        currWidth = (int) (templateWidth * step / (double) steps);
+      }
+
+      runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          progressBar.getLayoutParams().width = currWidth;
+          progressBar.requestLayout();
+        }
+      });
+
+      try {
+        Thread.sleep(ANALYZE_STAGE_TIME/steps);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        scoreText.setVisibility(View.VISIBLE);
+      }
+    });
+
   }
 
   @Override
@@ -177,6 +434,7 @@ public final class LivePreviewActivity extends AppCompatActivity
     // If there's no existing cameraSource, create one.
     if (cameraSource == null) {
       cameraSource = new CameraSource(this, graphicOverlay);
+      cameraSource.setFacing(CameraSource.CAMERA_FACING_FRONT);
     }
 
     try {
@@ -290,7 +548,8 @@ public final class LivePreviewActivity extends AppCompatActivity
                   visualizeZ,
                   rescaleZ,
                   runClassification,
-                  /* isStreamMode = */ true));
+                  /* isStreamMode = */ true,
+                      DRAW_JOINTS));
           break;
         case SELFIE_SEGMENTATION:
           cameraSource.setMachineLearningFrameProcessor(new SegmenterProcessor(this));
@@ -329,6 +588,7 @@ public final class LivePreviewActivity extends AppCompatActivity
         cameraSource = null;
       }
     }
+
   }
 
   @Override
