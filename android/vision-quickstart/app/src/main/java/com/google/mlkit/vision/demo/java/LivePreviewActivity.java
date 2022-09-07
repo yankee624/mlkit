@@ -96,6 +96,8 @@ public final class LivePreviewActivity extends AppCompatActivity
   private String selectedModel = POSE_DETECTION;
 
 
+  PoseDetectorProcessor poseDetectorProcessor;
+
   final int NUM_STAGE = 3;
   int curr_stage = 0;
   Drawable progressBarTemplateDrawable;
@@ -540,8 +542,7 @@ public final class LivePreviewActivity extends AppCompatActivity
           boolean visualizeZ = PreferenceUtils.shouldPoseDetectionVisualizeZ(this);
           boolean rescaleZ = PreferenceUtils.shouldPoseDetectionRescaleZForVisualization(this);
           boolean runClassification = PreferenceUtils.shouldPoseDetectionRunClassification(this);
-          cameraSource.setMachineLearningFrameProcessor(
-              new PoseDetectorProcessor(
+          poseDetectorProcessor = new PoseDetectorProcessor(
                   this,
                   poseDetectorOptions,
                   shouldShowInFrameLikelihood,
@@ -549,7 +550,8 @@ public final class LivePreviewActivity extends AppCompatActivity
                   rescaleZ,
                   runClassification,
                   /* isStreamMode = */ true,
-                      DRAW_JOINTS));
+                  DRAW_JOINTS);
+          cameraSource.setMachineLearningFrameProcessor(poseDetectorProcessor);
           break;
         case SELFIE_SEGMENTATION:
           cameraSource.setMachineLearningFrameProcessor(new SegmenterProcessor(this));

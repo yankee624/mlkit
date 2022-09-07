@@ -248,6 +248,29 @@
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent">
 
+    <ImageView
+        android:id="@+id/bodyOutlineView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:minWidth="400dp"
+        android:minHeight="600dp"
+        android:visibility="visible"
+        app:srcCompat="@drawable/body_outline" />
+
+    <TextView
+        android:id="@+id/distanceText"
+        android:layout_width="245dp"
+        android:layout_height="86dp"
+        android:layout_centerInParent="true"
+        android:layout_margin="20dp"
+        android:background="#DADADA"
+        android:gravity="center"
+        android:text="Step closer"
+        android:textColor="#FF3B59"
+        android:textSize="40dp"
+        android:textStyle="bold" />
+
     <TextView
         android:id="@+id/finalResultText"
         android:layout_width="wrap_content"

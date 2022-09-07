@@ -29,6 +29,8 @@ import com.google.mlkit.vision.pose.Pose;
 import com.google.mlkit.vision.pose.PoseDetection;
 import com.google.mlkit.vision.pose.PoseDetector;
 import com.google.mlkit.vision.pose.PoseDetectorOptionsBase;
+import com.google.mlkit.vision.pose.PoseLandmark;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -49,6 +51,8 @@ public class PoseDetectorProcessor
   private final boolean drawJoints;
   private final Context context;
   private final Executor classificationExecutor;
+
+  public int distance; // -1: too close, 0: good, 1: too far
 
   private PoseClassifierProcessor poseClassifierProcessor;
   /** Internal class to hold Pose and classification results. */
@@ -139,6 +143,20 @@ public class PoseDetectorProcessor
   protected void onSuccess(
       @NonNull PoseWithClassification poseWithClassification,
       @NonNull GraphicOverlay graphicOverlay) {
+    Pose pose = poseWithClassification.getPose();
+
+    PoseLandmark rightShoulder = pose.getPoseLandmark(PoseLandmark.RIGHT_SHOULDER);
+    PoseLandmark rightElbow = pose.getPoseLandmark(PoseLandmark.RIGHT_ELBOW);
+    if (rightShoulder != null && rightElbow != null) {
+      float rsx = rightShoulder.getPosition().x;
+      float rsy = rightShoulder.getPosition().y;
+      float rex = rightElbow.getPosition().x;
+      float rey = rightElbow.getPosition().y;
+      double dist = Math.sqrt((rsx-rex)*(rsx-rex) + (rsy-rey)*(rsy-rey));
+      Log.e(TAG, String.format("shoulder %f %f elbow %f %f dist", rsx, rsy, rex, rey, dist));
+    }
+
+
     if (drawJoints) {
       graphicOverlay.add(
               new PoseGraphic(
