@@ -43,6 +43,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:visibility="invisible"
         app:srcCompat="@drawable/progress_bar_template" />
 
     <ImageView
@@ -50,6 +51,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:visibility="invisible"
         app:srcCompat="@drawable/progress_bar_template" />
 
     <ImageView
@@ -57,6 +59,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:visibility="invisible"
         app:srcCompat="@drawable/progress_bar_template" />
   </LinearLayout>
 
@@ -198,8 +201,9 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center"
+        android:text="Stage 1"
         android:textStyle="bold"
-        android:text="Stage 1" />
+        android:visibility="invisible" />
 
     <TextView
         android:id="@+id/stageTextView2"
@@ -207,8 +211,9 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center"
+        android:text="Stage 2"
         android:textStyle="bold"
-        android:text="Stage 2" />
+        android:visibility="invisible" />
 
     <TextView
         android:id="@+id/stageTextView3"
@@ -216,8 +221,9 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center"
+        android:text="Stage 3"
         android:textStyle="bold"
-        android:text="Stage 3" />
+        android:visibility="invisible" />
   </LinearLayout>
 
 
@@ -243,6 +249,8 @@
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_height="match_parent"
+      android:layout_marginTop="60dp"
+      android:layout_marginBottom="30dp"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
@@ -252,24 +260,44 @@
         android:id="@+id/bodyOutlineView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
         android:minWidth="400dp"
-        android:minHeight="600dp"
+        android:minHeight="800dp"
+        android:layout_alignParentBottom="true"
         android:visibility="visible"
         app:srcCompat="@drawable/body_outline" />
+
+  </RelativeLayout>
+
+
+  <RelativeLayout
+      android:id="@+id/relativeLayout"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginBottom="60dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+
+
 
     <TextView
         android:id="@+id/distanceText"
         android:layout_width="245dp"
         android:layout_height="86dp"
+        android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
-        android:layout_margin="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
         android:background="#DADADA"
         android:gravity="center"
         android:text="Step closer"
         android:textColor="#FF3B59"
         android:textSize="40dp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:visibility="invisible" />
 
     <TextView
         android:id="@+id/finalResultText"
@@ -293,9 +321,10 @@
       android:id="@id/control"
       android:layout_width="match_parent"
       android:layout_height="60dp"
-      android:background="#00000000"
       android:orientation="horizontal"
-      app:layout_constraintBottom_toBottomOf="parent">
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent">
 
     <ToggleButton
         android:id="@+id/facing_switch"
@@ -307,12 +336,19 @@
         android:textOff=""
         android:textOn="" />
 
-    <Spinner
-        android:id="@+id/spinner"
-        android:layout_width="0dp"
+    <Button
+        android:id="@+id/startButton"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:text="Start!" />
+
+    <!--    <Spinner-->
+    <!--        android:id="@+id/spinner"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        android:layout_weight="1" />-->
 
   </LinearLayout>
 

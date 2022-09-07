@@ -29,6 +29,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -98,6 +99,7 @@ public final class LivePreviewActivity extends AppCompatActivity
 
   PoseDetectorProcessor poseDetectorProcessor;
 
+  boolean start = false;
   final int NUM_STAGE = 3;
   int curr_stage = 0;
   Drawable progressBarTemplateDrawable;
@@ -108,12 +110,17 @@ public final class LivePreviewActivity extends AppCompatActivity
   TextView[] scoreTexts = new TextView[NUM_STAGE];
   TextView hitMissText;
   TextView finalResultText;
+  Button startButton;
+  ImageView bodyOutline;
+  TextView distanceGuideText;
 
+  boolean SHOW_DISTANCE_TEXT = false;
+  boolean SHOW_BODY_OUTLINE = true;
   boolean SHOW_PAST_PROGRESS = true;
   boolean DRAW_JOINTS = true;
 
-  long ANALYZE_STAGE_TIME = 2000;
-  long STAGE_DURATION = 5000;
+  long ANALYZE_STAGE_TIME = 4000;
+  long STAGE_DURATION = 7559;
   long TOTAL_PLAY_TIME = NUM_STAGE*STAGE_DURATION + ANALYZE_STAGE_TIME;
 
   @Override
@@ -132,19 +139,19 @@ public final class LivePreviewActivity extends AppCompatActivity
       Log.d(TAG, "graphicOverlay is null");
     }
 
-    Spinner spinner = findViewById(R.id.spinner);
+
     List<String> options = new ArrayList<>();
     options.add(POSE_DETECTION);
     options.add(OBJECT_DETECTION);
 
-
-    // Creating adapter for spinner
-    ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, R.layout.spinner_style, options);
-    // Drop down layout style - list view with radio button
-    dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-    // attaching data adapter to spinner
-    spinner.setAdapter(dataAdapter);
-    spinner.setOnItemSelectedListener(this);
+//    Spinner spinner = findViewById(R.id.spinner);
+//    // Creating adapter for spinner
+//    ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, R.layout.spinner_style, options);
+//    // Drop down layout style - list view with radio button
+//    dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//    // attaching data adapter to spinner
+//    spinner.setAdapter(dataAdapter);
+//    spinner.setOnItemSelectedListener(this);
 
     ToggleButton facingSwitch = findViewById(R.id.facing_switch);
     facingSwitch.setOnCheckedChangeListener(this);
@@ -157,8 +164,11 @@ public final class LivePreviewActivity extends AppCompatActivity
               SettingsActivity.EXTRA_LAUNCH_SOURCE, SettingsActivity.LaunchSource.LIVE_PREVIEW);
           startActivity(intent);
         });
-
     createCameraSource(selectedModel);
+
+    distanceGuideText = findViewById(R.id.distanceText);
+    bodyOutline = findViewById(R.id.bodyOutlineView);
+    startButton = findViewById(R.id.startButton);
     hitMissText = findViewById(R.id.hitMissText);
     finalResultText = findViewById(R.id.finalResultText);
     stageTexts[0] = findViewById(R.id.stageTextView1);
@@ -176,6 +186,8 @@ public final class LivePreviewActivity extends AppCompatActivity
     progressBars[0] = findViewById(R.id.progressBar1);
     progressBars[1] = findViewById(R.id.progressBar2);
     progressBars[2] = findViewById(R.id.progressBar3);
+
+
     for (int i = 0; i < progressBars.length; i++) {
       progressBarTemplates[i].getLayoutParams().height = 150;
       progressBarEdges[i].getLayoutParams().height = 150;
@@ -189,48 +201,121 @@ public final class LivePreviewActivity extends AppCompatActivity
       scoreText.setTextSize(Dimension.SP, 20);
       scoreText.setTextColor(Color.parseColor("#332F2F"));
     }
-    finalResultText.setTextSize(Dimension.SP, 40);
-    finalResultText.setTextColor(Color.parseColor("#23FF00"));
+    finalResultText.setTextSize(Dimension.SP, 50);
+    finalResultText.setTextColor(Color.parseColor("#00DF58"));
     hitMissText.setTextSize(Dimension.SP, 40);
 
     progressBarTemplateDrawable = getDrawable(R.drawable.progress_bar_template);
 
 
-    if (!SHOW_PAST_PROGRESS) {
-      for (ImageView progressBarTemplate: progressBarTemplates) {
-        progressBarTemplate.setVisibility(View.INVISIBLE);
-      }
-      for (TextView stageText: stageTexts) {
-        stageText.setVisibility(View.INVISIBLE);
-      }
-    }
 
-    Timer timer = new Timer();
-    timer.schedule(new TimerTask() {
+
+    new Thread(new Runnable() {
       @Override
       public void run() {
-        if (SHOW_PAST_PROGRESS) {
-          showHitMiss();
-          progressAnimation();
-          showFinalScore();
-        } else {
-          showHitMiss();
+        while (!start) {
+          if (SHOW_DISTANCE_TEXT) {
+            distanceGuideText.setVisibility(View.VISIBLE);
+            if (poseDetectorProcessor.distance > 0) {
+              distanceGuideText.setText("Step closer");
+              distanceGuideText.setTextColor(Color.parseColor("#FF3B59"));
+            } else if (poseDetectorProcessor.distance < 0) {
+              distanceGuideText.setText("Step further");
+              distanceGuideText.setTextColor(Color.parseColor("#FF3B59"));
+            } else {
+              distanceGuideText.setText("Good!");
+              distanceGuideText.setTextColor(Color.parseColor("#0CCF58"));
+            }
+          }
+
+          if (SHOW_BODY_OUTLINE) {
+            bodyOutline.setVisibility(View.VISIBLE);
+          }
+
           try {
-            Thread.sleep(NUM_STAGE * STAGE_DURATION);
+            Thread.sleep(500);
           } catch (InterruptedException e) {
             e.printStackTrace();
           }
-          curr_stage = NUM_STAGE;
-          showLoading();
-          try {
-            Thread.sleep(ANALYZE_STAGE_TIME);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
+        }
+
+        // Game start -> Erase guidance
+        distanceGuideText.setVisibility(View.INVISIBLE);
+        bodyOutline.setVisibility(View.INVISIBLE);
+      }
+    }).start();
+
+
+    startButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        if (!start) {
+          start = true;
+
+          if (SHOW_PAST_PROGRESS) {
+            for (ImageView progressBarTemplate: progressBarTemplates) {
+              progressBarTemplate.setVisibility(View.VISIBLE);
+            }
+            for (TextView stageText: stageTexts) {
+              stageText.setVisibility(View.VISIBLE);
+            }
           }
-          showFinalScore();
+
+          Timer timer = new Timer();
+          timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+              show321();
+
+              if (SHOW_PAST_PROGRESS) {
+                showHitMiss();
+                progressAnimation();
+                showFinalScore();
+              } else {
+                showHitMiss();
+                try {
+                  Thread.sleep(NUM_STAGE * STAGE_DURATION);
+                } catch (InterruptedException e) {
+                  e.printStackTrace();
+                }
+                curr_stage = NUM_STAGE;
+                showLoading();
+                try {
+                  Thread.sleep(ANALYZE_STAGE_TIME);
+                } catch (InterruptedException e) {
+                  e.printStackTrace();
+                }
+                showFinalScore();
+              }
+            }
+          }, 500);
         }
       }
-    }, 10000);
+    });
+  }
+
+  public void show321() {
+    for (int i = 3; i >= 1; i--) {
+      final int remainingSec = i;
+      runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          finalResultText.setText(String.format("%d", remainingSec));
+        }
+      });
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    // Erase all
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        finalResultText.setText("");
+      }
+    });
   }
 
   public void showHitMiss() {
@@ -423,9 +508,9 @@ public final class LivePreviewActivity extends AppCompatActivity
     Log.d(TAG, "Set facing");
     if (cameraSource != null) {
       if (isChecked) {
-        cameraSource.setFacing(CameraSource.CAMERA_FACING_FRONT);
-      } else {
         cameraSource.setFacing(CameraSource.CAMERA_FACING_BACK);
+      } else {
+        cameraSource.setFacing(CameraSource.CAMERA_FACING_FRONT);
       }
     }
     preview.stop();

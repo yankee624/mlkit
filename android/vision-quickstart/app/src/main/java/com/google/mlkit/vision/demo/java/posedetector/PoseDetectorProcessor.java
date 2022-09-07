@@ -52,7 +52,7 @@ public class PoseDetectorProcessor
   private final Context context;
   private final Executor classificationExecutor;
 
-  public int distance; // -1: too close, 0: good, 1: too far
+  public int distance = 1; // -1: too close, 0: good, 1: too far
 
   private PoseClassifierProcessor poseClassifierProcessor;
   /** Internal class to hold Pose and classification results. */
@@ -148,14 +148,22 @@ public class PoseDetectorProcessor
     PoseLandmark rightShoulder = pose.getPoseLandmark(PoseLandmark.RIGHT_SHOULDER);
     PoseLandmark rightElbow = pose.getPoseLandmark(PoseLandmark.RIGHT_ELBOW);
     if (rightShoulder != null && rightElbow != null) {
-      float rsx = rightShoulder.getPosition().x;
-      float rsy = rightShoulder.getPosition().y;
-      float rex = rightElbow.getPosition().x;
-      float rey = rightElbow.getPosition().y;
-      double dist = Math.sqrt((rsx-rex)*(rsx-rex) + (rsy-rey)*(rsy-rey));
-      Log.e(TAG, String.format("shoulder %f %f elbow %f %f dist", rsx, rsy, rex, rey, dist));
+      float rsLikelihood = rightShoulder.getInFrameLikelihood();
+      float reLikelihood = rightElbow.getInFrameLikelihood();
+      if (rsLikelihood > 0.5 && reLikelihood > 0.5) {
+        float rsx = rightShoulder.getPosition().x;
+        float rsy = rightShoulder.getPosition().y;
+        float rex = rightElbow.getPosition().x;
+        float rey = rightElbow.getPosition().y;
+        double jointLength = Math.sqrt((rsx-rex)*(rsx-rex) + (rsy-rey)*(rsy-rey));
+        if (jointLength < 75) distance = 1;
+        else if (jointLength < 150) distance = 0;
+        else distance = -1;
+//        Log.e(TAG, String.format("shoulder %f %f, %f", rsx, rsy, rsLikelihood));
+//        Log.e(TAG, String.format("elbow %f %f, %f", rex, rey, reLikelihood));
+//        Log.e(TAG, "jointLength: " + jointLength);
+      }
     }
-
 
     if (drawJoints) {
       graphicOverlay.add(
